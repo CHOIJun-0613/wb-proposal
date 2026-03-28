@@ -118,6 +118,14 @@ def main():
             folder_name = f"{PPTX_DIR_ENV}/{str(rel_path.parent).replace(os.sep, '/')}"
             
         fname = rel_path.name
+
+        # === A3 예외 처리 ===
+        if "A3" in fname:
+            # 엑셀에만 명시하고 페이지 번호 부여 및 파일 복사(저장)는 건너뜀
+            index_rows.append((folder_name, fname, slide_counts[i], "-", "-"))
+            print(f"  [{folder_name}] {fname}  (A3: 페이지 번호 제외)")
+            continue
+
         chapter = get_chapter_from_filename(fname)
         
         # 페이지 초기화 조건

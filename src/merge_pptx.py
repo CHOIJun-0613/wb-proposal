@@ -289,26 +289,56 @@ class Merger:
 # ── 실행 ──────────────────────────────────────────────────────────────────────
 
 def main():
-    files = sorted(glob.glob(str(PPTX_DIR / "*.pptx")))
-    if not files:
-        print(f"파일 없음: {PPTX_DIR}")
+    # 하위 폴더까지 재귀 탐색
+    raw_files = sorted([str(p) for p in PPTX_DIR.rglob("*.pptx")])
+    # 파일명에 'A3'가 포함된 파일 배제
+    all_files = [f for f in raw_files if "A3" not in os.path.basename(f)]
+    
+    if not all_files:
+        print(f"파일 없음: {PPTX_DIR} (혹은 모두 A3로 제외됨)")
         return
 
     # 타임스탬프 출력 폴더 생성
     timestamp = datetime.now().strftime("%Y%m%d-%H%M%S")
     out_dir = OUTPUT_DIR / timestamp
     out_dir.mkdir(parents=True, exist_ok=True)
-    output = out_dir / MERGE_OUTPUT
 
     print(f"설정값: PPTX_DIR={PPTX_DIR}")
     print(f"출력 폴더: {out_dir}")
-    print(f"총 {len(files)}개 파일 병합 시작\n")
-    m = Merger()
-    m.load_base(files[0])
-    for f in files[1:]:
-        m.append(f)
-    m.set_first_slide_num(1)
-    m.save(str(output))
+    print(f"총 {len(all_files)}개 파일 탐색됨\n")
+
+    # 폴더 단위로 파일 그룹화
+    folder_groups = {}
+    for filepath in all_files:
+        rel_path = Path(filepath).relative_to(PPTX_DIR)
+        parent_dir = str(rel_path.parent)
+        if parent_dir not in folder_groups:
+            folder_groups[parent_dir] = []
+        folder_groups[parent_dir].append(filepath)
+
+    # 각 그룹(폴더)마다 개별 병합 진행
+    for folder_name, files in folder_groups.items():
+        if not files:
+            continue
+            
+        if folder_name == '.':
+            output_name = "통합.pptx"
+            display_name = "최상위 폴더"
+        else:
+            output_name = f"{Path(folder_name).name}-통합.pptx"
+            display_name = folder_name
+            
+        output_path = out_dir / output_name
+        
+        print(f"\n[{display_name}] 그룹 ({len(files)}개 파일) 병합 시작...")
+        
+        m = Merger()
+        m.load_base(files[0])
+        for f in files[1:]:
+            m.append(f)
+            
+        m.set_first_slide_num(1)
+        m.save(str(output_path))
 
 
 if __name__ == '__main__':

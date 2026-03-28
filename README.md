@@ -87,10 +87,12 @@ cmd\pagenum.bat
 cmd\pptmerge.bat
 ```
 
-- `pptx/` 폴더의 PPTX 파일 34개를 하나의 파일로 병합
-- 이미지, 차트, SmartArt, 임베딩 파일 포함 전체 리소스 보존
-- 결과 파일을 `output/YYYYMMDD-HH24MISS/III.기술부문.pptx` 에 저장
-- 총 1,061슬라이드 / 약 202 MB
+- `pptx/` 하위 폴더까지 재귀적으로 탐색하여 **폴더 단위별로 PPTX 파일들을 개별 병합**합니다.
+- 이미지, 차트, SmartArt, 임베딩 파일 포함 전체 리소스 보존 
+- 결과 파일을 `output/YYYYMMDD-HH24MISS/` 폴더에 아래 규칙으로 생성하여 저장합니다:
+  - 최상위 폴더(`./pptx` 직속 파일): `통합.pptx`
+  - 하위 폴더(예: `./pptx/III.개요`): 폴더 이름을 따서 `III.개요-통합.pptx`
+- 여러 개의 폴더가 존재할 경우 각각의 폴더를 독립적으로 묶어 여러 개의 통합 PPTX 파일을 최종 산출합니다.
 
 ### 3. 가상환경 직접 실행 (`runvenv.bat`)
 
